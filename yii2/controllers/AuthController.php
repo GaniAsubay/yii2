@@ -55,7 +55,7 @@ class AuthController extends Controller
         $user = new User();
         if($user->saveFromVk($uid, $first_name, $photo))
         {
-            return $this->redirect(['site/index']);
+            return $this->redirect(['/']);
         }
     }
 }

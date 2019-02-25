@@ -29,7 +29,7 @@ AppAsset::register($this);
 <div class="wrap">
     <?php
     NavBar::begin([
-        'brandLabel' => Yii::$app->name,
+        'brandLabel' => 'На сайт',
         'brandUrl' => Yii::$app->homeUrl,
         'options' => [
             'class' => 'navbar-inverse navbar-fixed-top',
@@ -38,10 +38,11 @@ AppAsset::register($this);
     echo Nav::widget([
         'options' => ['class' => 'navbar-nav navbar-right'],
         'items' => [
-            ['label' => 'Admin', 'url' => ['/admin/default/index']],
-            ['label' => 'Article', 'url' => ['/admin/article/index']],
-            ['label' => 'Category', 'url' => ['/admin/category/index']],
-            ['label' => 'Tag', 'url' => ['/admin/tag/index']],
+            ['label' => 'Admin', 'url' => ['/admin/default']],
+            ['label' => 'Article', 'url' => ['/admin/article']],
+            ['label' => 'Category', 'url' => ['/admin/category']],
+            ['label' => 'Tag', 'url' => ['/admin/tag']],
+            ['label' => 'Rbac', 'url' => ['/admin/rbac']],
         ],
     ]);
     NavBar::end();

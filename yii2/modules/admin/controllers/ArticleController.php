@@ -2,10 +2,11 @@
 
 namespace app\modules\admin\controllers;
 
+use Yii;
 use app\models\Category;
 use app\models\ImageUpload;
 use app\models\Tag;
-use Yii;
+use app\models\User;
 use app\models\Article;
 use app\models\ArticleSearch;
 use yii\helpers\ArrayHelper;
@@ -13,7 +14,6 @@ use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\web\UploadedFile;
-
 /**
  * ArticleController implements the CRUD actions for Article model.
  */
@@ -33,7 +33,6 @@ class ArticleController extends Controller
             ],
         ];
     }
-
     /**
      * Lists all Article models.
      * @return mixed
@@ -48,7 +47,6 @@ class ArticleController extends Controller
             'dataProvider' => $dataProvider,
         ]);
     }
-
     /**
      * Displays a single Article model.
      * @param integer $id
@@ -71,7 +69,7 @@ class ArticleController extends Controller
     {
         $model = new Article();
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+        if ($model->load(Yii::$app->request->post()) && $model->saveArticle()) {
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
@@ -90,16 +88,16 @@ class ArticleController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
-
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+        if($model->user_id == Yii::$app->user->id)
+        {
+        if ($model->load(Yii::$app->request->post()) && $model->saveArticle()) {
             return $this->redirect(['view', 'id' => $model->id]);
         }
-
+    }
         return $this->render('update', [
             'model' => $model,
         ]);
     }
-
     /**
      * Deletes an existing Article model.
      * If deletion is successful, the browser will be redirected to the 'index' page.
@@ -109,11 +107,12 @@ class ArticleController extends Controller
      */
     public function actionDelete($id)
     {
+        if($model->user_id == Yii::$app->user->id)
+        {
         $this->findModel($id)->delete();
-
-        return $this->redirect(['index']);
     }
-
+    return $this->redirect(['index']);
+    }
     /**
      * Finds the Article model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
@@ -169,7 +168,6 @@ class ArticleController extends Controller
            $article->saveTag($tags);
            return $this->redirect(['view', 'id'=>$article->id]);
         }
-
         return $this->render('tags', [
             'selectedTags'=>$selectedTags,
             'tags'=>$tags

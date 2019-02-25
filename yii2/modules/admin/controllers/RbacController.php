@@ -3,11 +3,12 @@
 namespace app\modules\admin\controllers;
 
 use yii\web\Controller;
-
+use Yii;
+use app\models\User;
 /**
  * Default controller for the `admin` module
  */
-class DefaultController extends Controller
+class RbacController extends Controller
 {
     public function actionIndex()
     {

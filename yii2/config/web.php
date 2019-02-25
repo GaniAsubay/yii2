@@ -21,6 +21,10 @@ $config = [
             'enableAutoLogin' => true,
             'loginUrl'=>['auth/login']
         ],
+        'authManager'=>[
+            'class'=>'yii\rbac\Dbmanager'
+        ],
+
         'errorHandler' => [
             'errorAction' => 'site/error',
         ],
@@ -39,6 +43,7 @@ $config = [
         'admin' => [
             'class' => 'app\modules\admin\Module',
         ],
+        
     ],
 ];
 

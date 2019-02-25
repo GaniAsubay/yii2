@@ -148,5 +148,17 @@ class Article extends \yii\db\ActiveRecord
     {
         return Article::find()->orderBy('date desc')->limit(4)->all();
     }
-
+    public function getAuthor()
+    {
+        return $this->hasOne(User::className(), ['id'=>'user_id']);
+    }
+    public function viewedCounter()
+    {
+        $this->viewed += 1;
+        return $this->save(false);
+    }
+    public function saveArticle(){
+        $this->user_id = Yii::$app->user->id;
+        return $this->save(false);
+    }
  }

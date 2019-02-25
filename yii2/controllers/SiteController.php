@@ -65,7 +65,7 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-    $data = Article::getAll();
+    $data = Article::getAll(4);
     $popular = Article::getPopular();
     $recent = Article::getRecent();
     $categorys = Category::getAll();
@@ -113,6 +113,7 @@ class SiteController extends Controller
         $popular = Article::getPopular();
         $recent = Article::getRecent();
         $categorys = Category::getAll();
+        $article->viewedCounter();
         return $this->render('article',[
             'article'=>$article,
             'tags'=>$tags,
