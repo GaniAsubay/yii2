@@ -1,8 +1,6 @@
 <?php
-
 /* @var $this \yii\web\View */
 /* @var $content string */
-
 use app\assets\PublicAsset;
 use yii\helpers\Html;
 use yii\bootstrap\Nav;
@@ -10,7 +8,7 @@ use yii\bootstrap\NavBar;
 use yii\helpers\Url;
 use yii\widgets\Breadcrumbs;
 use app\assets\AppAsset;
-
+use mdm\admin\components\Helper;
 PublicAsset::register($this);
 ?>
 <?php $this->beginPage() ?>
@@ -46,12 +44,12 @@ PublicAsset::register($this);
                 <div class="i_con">
                     <ul class="nav navbar-nav text-uppercase">
                         <?php if(Yii::$app->user->isGuest):?>
-                            <li><a href="<?= Url::toRoute(['auth/login'])?>">Login</a></li>
-                            <li><a href="<?= Url::toRoute(['auth/signup'])?>">Register</a></li>
+                            <li><a href="<?= Url::toRoute(['site/login'])?>">Войти</a></li>
+                            <li><a href="<?= Url::toRoute(['site/signup'])?>">Регистрация</a></li>
                         <?php else: ?>
-                            <?= Html::beginForm(['/auth/logout'], 'post')
+                            <?= Html::beginForm(['/site/logout'], 'post')
                             . Html::submitButton(
-                                'Logout (' . Yii::$app->user->identity->name . ')',
+                                'Logout (' . Yii::$app->user->identity->username . ')',
                                 ['class' => 'btn btn-link logout', 'style'=>"padding-top:10px;"]
                             )
                             . Html::endForm() ?>
@@ -73,7 +71,7 @@ PublicAsset::register($this);
 <!--footer start-->
 
 
-<footer class="footer-widget-section">
+<footer class="footer-widget-section" >
     <div class="footer-copy">
         <div class="container">
             <div class="row">

@@ -7,6 +7,7 @@ $config = [
     'id' => 'basic',
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
+    'language'=>'ru',
     'aliases' => [
         '@bower' => '@vendor/bower-asset',
         '@npm'   => '@vendor/npm-asset',
@@ -17,9 +18,8 @@ $config = [
             'cookieValidationKey' => 'EuNB1njUymD0pxizm4FPz-k1_UNVGfCP',
         ],
         'user' => [
-            'identityClass' => 'app\models\User',
-            'enableAutoLogin' => true,
-            'loginUrl'=>['auth/login']
+            'identityClass' =>  'app\models\User', 
+            'loginUrl' => ['site/login'],
         ],
         'authManager'=>[
             'class'=>'yii\rbac\Dbmanager'
@@ -43,8 +43,30 @@ $config = [
         'admin' => [
             'class' => 'app\modules\admin\Module',
         ],
-        
+        'rbac' => [
+            'class'  =>  'mdm\admin\Module',
+            'controllerMap' => [
+                 'assignment' => [
+                    'class' => 'mdm\admin\controllers\AssignmentController',
+                    /* 'userClassName' => 'app\models\User', */
+                    'idField' => 'id',
+                    'usernameField' => 'username',
+                ],
+            ],
+             'layout' => 'left-menu',
+            'mainLayout' => '@app/views/layouts/admin.php',
+       ],
+               'moder' => [
+            'class' => 'app\modules\moder\Module',
+        ]
     ],
+    'as access' => [
+        'class' => 'mdm\admin\components\AccessControl',
+        'allowActions' => [
+            'site/*',
+            'rbac/*'
+    ],
+]
 ];
 
 if (YII_ENV_DEV) {

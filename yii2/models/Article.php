@@ -5,6 +5,7 @@ namespace app\models;
 use Yii;
 use yii\data\Pagination;
 use yii\helpers\ArrayHelper;
+use yii\web\ForbiddenHttpException;
 /**
  * This is the model class for table "article".
  *
@@ -38,13 +39,13 @@ class Article extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-           [['title','description','content'], 'required'],
-           [['title','description','content'],'string'],
-           [['date'], 'date','format'=>'php:Y-m-d'],
-           [['date'], 'default','value'=>date('Y-m-d')],
-           [['title'],'string','max'=>255]
-        ];
-    }
+         [['title','description','content'], 'required'],
+         [['title','description','content'],'string'],
+         [['date'], 'date','format'=>'php:Y-m-d'],
+         [['date'], 'default','value'=>date('Y-m-d')],
+         [['title'],'string','max'=>255]
+     ];
+ }
 
     /**
      * {@inheritdoc}
@@ -102,63 +103,71 @@ class Article extends \yii\db\ActiveRecord
     public function getTags()
     {
         return $this->hasMany(Tag::className(), ['id' => 'tag_id'])
-            ->viaTable('article_tag', ['article_id' => 'id']);
+        ->viaTable('article_tag', ['article_id' => 'id']);
     }
     public function getSelectedTags()
     {
-         $selectedIds = $this->getTags()->select('id')->asArray()->all();
-        return ArrayHelper::getColumn($selectedIds, 'id');
-    }
-      public function saveTag($tags)
+       $selectedIds = $this->getTags()->select('id')->asArray()->all();
+       return ArrayHelper::getColumn($selectedIds, 'id');
+   }
+   public function saveTag($tags)
+   {
+    if(is_array($tags))
     {
-        if(is_array($tags))
-        {
-            $this->clearTag();
-            foreach ($tags as $tag_id) {
-                $tag = Tag::findOne($tag_id);
-                $this->link('tags', $tag);
-            }
+        $this->clearTag();
+        foreach ($tags as $tag_id) {
+            $tag = Tag::findOne($tag_id);
+            $this->link('tags', $tag);
         }
     }
-    private function clearTag(){
-        ArticleTag::deleteAll(['article_id'=>$this->id]);
-    }
-    public static function getAll($pageSize = 2)
-    {
+}
+private function clearTag(){
+    ArticleTag::deleteAll(['article_id'=>$this->id]);
+}
+public static function getAll($pageSize = 2)
+{
     $query = Article::find();
-        $count = $query->count();
-        $pagination = new Pagination(['totalCount' => $count, 'pageSize'=>$pageSize]);
-        $articles = $query->offset($pagination->offset)
-            ->limit($pagination->limit)
-            ->all();
-        $data['articles'] = $articles;
-        $data['pagination'] = $pagination;
-        
-        return $data;
+    $count = $query->count();
+    $pagination = new Pagination(['totalCount' => $count, 'pageSize'=>$pageSize]);
+    $articles = $query->offset($pagination->offset)
+    ->limit($pagination->limit)
+    ->all();
+    $data['articles'] = $articles;
+    $data['pagination'] = $pagination;
+
+    return $data;
+}
+public static function getPopular()
+{
+    return Article::find()->orderBy('viewed desc')->limit(3)->all();
+}
+public function getDate()
+{
+    return Yii::$app->formatter->asDate($this->date);
+}
+public static function getRecent()
+{
+    return Article::find()->orderBy('date desc')->limit(4)->all();
+}
+public function viewedCounter()
+{
+    $this->viewed += 1;
+    return $this->save(false);
+}
+public function saveArticle(){
+    $this->user_id = Yii::$app->user->id;
+    return $this->save(false);
+}
+public function chekAuthor($model){
+    return Yii::$app->user->can('administrator') || Yii::$app->user->can('Updatemypost',['post'=>$model]);
+}
+ 
+public function chekDelete($model){
+    if(Yii::$app->user->can('administrator') || Yii::$app->user->can('Updatemypost',['post'=>$model])){
+        $model->delete();
     }
-      public static function getPopular()
-    {
-        return Article::find()->orderBy('viewed desc')->limit(3)->all();
+    else {
+        throw new ForbiddenHttpException(); 
     }
-    public function getDate()
-    {
-        return Yii::$app->formatter->asDate($this->date);
-    }
-          public static function getRecent()
-    {
-        return Article::find()->orderBy('date desc')->limit(4)->all();
-    }
-    public function getAuthor()
-    {
-        return $this->hasOne(User::className(), ['id'=>'user_id']);
-    }
-    public function viewedCounter()
-    {
-        $this->viewed += 1;
-        return $this->save(false);
-    }
-    public function saveArticle(){
-        $this->user_id = Yii::$app->user->id;
-        return $this->save(false);
-    }
- }
+}
+}

@@ -1,6 +1,6 @@
 <?php
 
-namespace app\modules\admin\controllers;
+namespace app\modules\moder\controllers;
 
 use Yii;
 use app\models\Category;
@@ -12,6 +12,7 @@ use app\models\ArticleSearch;
 use yii\helpers\ArrayHelper;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\filters\VerbFilter;
 use yii\web\UploadedFile;
 /**
@@ -55,9 +56,15 @@ class ArticleController extends Controller
      */
     public function actionView($id)
     {
-        return $this->render('view', [
-            'model' => $this->findModel($id),
+    $model = $this->findModel($id);
+            if($model->chekAuthor($model)){
+            return $this->render('view', [
+            'model' => $model,
         ]);
+        }
+        else {
+            throw new ForbiddenHttpException(); 
+        }
     }
 
     /**
@@ -69,13 +76,15 @@ class ArticleController extends Controller
     {
         $model = new Article();
 
-        if ($model->load(Yii::$app->request->post()) && $model->saveArticle()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+        if($model->load(Yii::$app->request->post())){
+            $model->user_id = Yii::$app->user->id;
+            if($model->validate() && $model->save()){
+                return $this->redirect(['index']);
+            }
         }
-
-        return $this->render('create', [
-            'model' => $model,
-        ]);
+            return $this->render('create', [
+                'model' => $model,
+            ]);
     }
 
     /**
@@ -87,16 +96,22 @@ class ArticleController extends Controller
      */
     public function actionUpdate($id)
     {
-        $model = $this->findModel($id);
-        if($model->user_id == Yii::$app->user->id)
+      $model = $this->findModel($id);
+      if($model->chekAuthor($model)){
+        if ($model->load(Yii::$app->request->post())  && $model->save())
         {
-        if ($model->load(Yii::$app->request->post()) && $model->saveArticle()) {
-            return $this->redirect(['view', 'id' => $model->id]);
-        }
-    }
-        return $this->render('update', [
+          return $this->redirect(['index', 'id' => $model->id]);
+        } 
+        else{
+          return $this->render('update', [
             'model' => $model,
-        ]);
+          ]);
+        }
+      }
+      else {
+        throw new ForbiddenHttpException();  
+      }
+
     }
     /**
      * Deletes an existing Article model.
@@ -107,19 +122,11 @@ class ArticleController extends Controller
      */
     public function actionDelete($id)
     {
-        if($model->user_id == Yii::$app->user->id)
-        {
-        $this->findModel($id)->delete();
-    }
+        $model = $this->findModel($id);
+        $model->chekDelete($model);
     return $this->redirect(['index']);
     }
-    /**
-     * Finds the Article model based on its primary key value.
-     * If the model is not found, a 404 HTTP exception will be thrown.
-     * @param integer $id
-     * @return Article the loaded model
-     * @throws NotFoundHttpException if the model cannot be found
-     */
+
     protected function findModel($id)
     {
         if (($model = Article::findOne($id)) !== null) {
@@ -130,20 +137,23 @@ class ArticleController extends Controller
     public function actionImage($id)
     {
         $model = new ImageUpLoad; 
+        $article = $this->findModel($id);
+        if ($article->chekAuthor($article)){
         if (Yii::$app->request->isPost)
         {
-          $article = $this->findModel($id);
           $file = UploadedFile::getInstance($model, 'image');
           if($article->saveImage( $model->upLoadFile($file, $article->image))){
             return $this->redirect(['index']);
           }
         }
+    }
         return $this->render('image',['model'=>$model]);
     }
     public function actionCategory($id){
         $article = $this->findModel($id);
         $selectedCategory = $article->category->id;
         $categories = ArrayHelper::map(Category::find()->all(), 'id', 'title');
+        if ($article->chekAuthor($article))  {
           if(Yii::$app->request->isPost)
         {
             $category = Yii::$app->request->post('category');
@@ -152,6 +162,7 @@ class ArticleController extends Controller
                 return $this->redirect(['view', 'id'=>$article->id]);
             }
         }
+    }
         return $this->render('category', [
             'article'=>$article,
             'selectedCategory'=>$selectedCategory,
@@ -162,6 +173,7 @@ class ArticleController extends Controller
         $article = $this->findModel($id);
         $selectedTags = $article->getSelectedTags();
         $tags = ArrayHelper::map(Tag::find()->all(), 'id', 'title');
+        if ($article->chekAuthor($article)){
         if(Yii::$app->request->isPost)
         {
            $tags = Yii::$app->request->post('tags');
@@ -173,4 +185,5 @@ class ArticleController extends Controller
             'tags'=>$tags
         ]);
     }
+}
 }
